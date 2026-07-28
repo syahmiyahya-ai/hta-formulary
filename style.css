@@ -684,3 +684,81 @@ body {
     border-color: var(--brand-teal);
     color: var(--text-main);
 }
+
+/* Mobile Viewport Styling (Responsive Mobile-First Design) */
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        flex-shrink: 0;
+    }
+
+    .main-content {
+        flex-direction: column;
+        position: relative;
+    }
+
+    .list-pane {
+        width: 100%;
+        height: 100%;
+        border-right: none;
+    }
+
+    .viewer-pane {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+        display: none; /* Hide until drug is selected */
+    }
+
+    /* Screen toggling on mobile */
+    .app-container.has-selection .sidebar,
+    .app-container.has-selection .list-pane {
+        display: none !important;
+    }
+
+    .app-container.has-selection .viewer-pane {
+        display: flex !important;
+    }
+
+    .mobile-back-btn {
+        display: inline-flex !important;
+    }
+    
+    .drug-profile {
+        padding: 16px;
+    }
+    
+    .calc-inputs {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Default Desktop styling for mobile back button */
+.mobile-back-btn {
+    display: none;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+    width: fit-content;
+}
+.mobile-back-btn:hover {
+    border-color: var(--brand-teal);
+    color: var(--brand-teal);
+}

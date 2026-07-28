@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Warnings DOM Cache
     const clinicalWarning = document.getElementById('clinicalWarning');
     const warningText = document.getElementById('warningText');
+    const mobileBackBtn = document.getElementById('mobileBackBtn');
     
     // Priority Guide DOM Cache
     const priorityGuideSection = document.getElementById('priorityGuideSection');
@@ -100,6 +101,12 @@ document.addEventListener('DOMContentLoaded', () => {
     childWeight.addEventListener('input', calculatePediatricDose);
     doseMultiplier.addEventListener('input', calculatePediatricDose);
     multiplierUnit.addEventListener('change', calculatePediatricDose);
+
+    mobileBackBtn.addEventListener('click', () => {
+        state.selectedDrug = null;
+        document.querySelector('.app-container').classList.remove('has-selection');
+        drugList.querySelectorAll('.drug-card').forEach(c => c.classList.remove('active'));
+    });
 
     // Apply Filters & Render
     function applyFilters() {
@@ -158,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Select and Display Drug Detail
     function selectDrug(drug) {
         state.selectedDrug = drug;
+        document.querySelector('.app-container').classList.add('has-selection');
         
         // Highlight active card
         const cards = drugList.querySelectorAll('.drug-card');
