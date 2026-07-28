@@ -11,7 +11,7 @@
 </head>
 <body class="dark-theme">
     <div class="app-container">
-        <!-- Sidebar Navigation & Quick Filters -->
+        <!-- Sidebar Navigation, Sticky Search & Quick Filters -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
@@ -20,59 +20,54 @@
                         <path d="M8 11h8"/>
                         <path d="M12 7v8"/>
                     </svg>
-                    <span>HTA Formulary</span>
+                    <div class="logo-text">
+                        <span>HTA Formulary</span>
+                        <span class="slogan">Paediatric ED &amp; Clinical</span>
+                    </div>
                 </div>
-                <div class="slogan">Paediatric ED & Clinical support</div>
-                <a href="wchkl-paeds-doses.pdf" target="_blank" class="pdf-link-btn">📄 Tunku Azizah Guide (PDF)</a>
-            </div>
-
-            <div class="search-section">
-                <div class="search-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
-                        <circle cx="11" cy="11" r="8"/>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    </svg>
-                    <input id="searchInput" type="search" placeholder="Search by drug name or indication..." autocomplete="off">
+                <div class="header-actions">
+                    <a href="wchkl-paeds-doses.pdf" target="_blank" class="btn-icon pdf-icon-btn" title="Tunku Azizah Guide (PDF)" aria-label="Tunku Azizah Guide PDF">📄</a>
+                    <button id="themeToggle" class="btn-icon" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">🌙</button>
                 </div>
             </div>
 
-            <div class="filter-group">
-                <h3>Prescriber Category</h3>
-                <div class="filter-chips" id="prescriberFilters">
-                    <button class="chip active" data-filter="all">All</button>
-                    <button class="chip" data-filter="A">A</button>
-                    <button class="chip" data-filter="A*">A*</button>
-                    <button class="chip" data-filter="B">B</button>
-                    <button class="chip" data-filter="C">C/C+</button>
-                    <button class="chip" data-filter="UKK">UKK</button>
+            <!-- Sticky Search & Filter Controls Bar -->
+            <div class="sticky-controls">
+                <div class="search-row">
+                    <div class="search-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input id="searchInput" type="search" placeholder="Search by drug name or indication..." autocomplete="off">
+                    </div>
+                    <div class="icon-toggles">
+                        <button class="icon-toggle-btn" id="pedsFilterBtn" title="Paediatric Dose Available" aria-label="Paediatric Dose Available">👶</button>
+                        <button class="icon-toggle-btn" id="ehisFilterBtn" title="Available in e-HIS" aria-label="Available in e-HIS">🖥️</button>
+                    </div>
+                </div>
+
+                <div class="filter-row">
+                    <select id="prescriberSelect" class="prescriber-select" aria-label="Prescriber Category Filter">
+                        <option value="all">All Prescriber Categories</option>
+                        <option value="A">Cat A - Consultant</option>
+                        <option value="A*">Cat A* - Specialist</option>
+                        <option value="B">Cat B - Medical Officer</option>
+                        <option value="C">Cat C/C+ - Paramedical</option>
+                        <option value="UKK">Cat UKK - Special Permit</option>
+                    </select>
+                    <div class="db-stats-badge" id="dbStats"><span id="matchCount">1113</span> items</div>
                 </div>
             </div>
 
-            <div class="filter-group">
-                <h3>Clinical Features</h3>
-                <div class="filter-chips">
-                    <button class="chip" id="pedsFilterBtn">👶 Paediatric Dose Available</button>
-                    <button class="chip" id="ehisFilterBtn">🖥️ Available in e-HIS</button>
-                </div>
-            </div>
-
-            <div class="sidebar-footer">
-                <div class="db-stats" id="dbStats">Loading drugs database...</div>
-                <button id="themeToggle" class="btn-icon" title="Toggle Light/Dark Theme">🌙</button>
+            <!-- Drug List Panel -->
+            <div class="drug-list" id="drugList">
+                <!-- Dynamic compact drug cards injected here -->
             </div>
         </aside>
 
         <!-- Main Workspace split -->
         <main class="main-content">
-            <!-- Drug List Panel -->
-            <section class="list-pane">
-                <div class="pane-header">
-                    <h2>Formulary Items (<span id="matchCount">0</span>)</h2>
-                </div>
-                <div class="drug-list" id="drugList">
-                    <!-- Dynamic drug cards injected here -->
-                </div>
-            </section>
 
             <!-- Detailed View & Calculator Pane -->
             <section class="viewer-pane" id="viewerPane">
@@ -100,11 +95,18 @@
                     </header>
 
                     <div class="profile-body">
-                        <!-- Paediatric Calculator Component -->
-                        <div class="calculator-card neumorphic">
+                        <!-- Consolidated Paediatric Calculator Component -->
+                        <div class="calculator-card">
                             <div class="calc-header">
                                 <h3>👶 Paediatric Dose Calculator</h3>
                                 <span class="calc-badge">Accurate Multiplier</span>
+                            </div>
+
+                            <div class="calc-suggested-multipliers hidden" id="suggestedMultipliersSection">
+                                <p class="suggested-label">Detected in dosage guidelines:</p>
+                                <div class="suggested-multiplier-chips" id="suggestedMultipliers">
+                                    <!-- Dynamic suggested multiplier chips -->
+                                </div>
                             </div>
                             
                             <div class="calc-inputs">
@@ -113,30 +115,26 @@
                                     <input type="number" id="childWeight" placeholder="e.g. 15.4" min="0.1" step="0.1">
                                 </div>
                                 <div class="input-field">
-                                    <label for="doseMultiplier">Dose Multiplier (mg/kg)</label>
+                                    <label for="doseMultiplier">Dose Multiplier</label>
                                     <div class="multiplier-input-group">
                                         <input type="number" id="doseMultiplier" placeholder="e.g. 15" min="0.001" step="any">
                                         <select id="multiplierUnit">
                                             <option value="mg/kg">mg/kg</option>
                                             <option value="mcg/kg">mcg/kg</option>
+                                            <option value="u/kg">u/kg</option>
+                                            <option value="MU/kg">MU/kg</option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="calc-suggested-multipliers" id="suggestedMultipliersSection">
-                                <p>Detected in dosage instructions:</p>
-                                <div class="suggested-multiplier-chips" id="suggestedMultipliers">
-                                    <!-- Dynamic suggested multiplier chips -->
-                                </div>
-                            </div>
-
                             <div class="calc-result" id="calcResult">
+                                <div class="result-label">Calculated Single Dose</div>
                                 <div class="result-value">
                                     <span class="number" id="calculatedDose">-</span>
                                     <span class="unit" id="calculatedUnit">mg</span>
                                 </div>
-                                <div class="result-formula" id="calculatedFormula">Enter weight & multiplier to compute.</div>
+                                <div class="result-formula" id="calculatedFormula">Enter weight &amp; multiplier to compute.</div>
                             </div>
                         </div>
 
@@ -149,7 +147,7 @@
                             </div>
                         </div>
 
-                        <!-- Priority Guide Info (Extracted from Tunku Azizah PDF) -->
+                        <!-- Priority Guide Info (Hospital Tunku Azizah) -->
                         <div class="alert-box alert-priority hidden" id="priorityGuideSection">
                             <div class="alert-icon">⭐</div>
                             <div class="alert-content">
@@ -159,17 +157,15 @@
                         </div>
 
                         <!-- Indications Section -->
-                        <div class="info-section">
+                        <div class="info-card">
                             <h4>Indications</h4>
                             <p id="detailIndications" class="text-block">Standard approved indications for this drug.</p>
                         </div>
 
                         <!-- Dosage Instructions -->
-                        <div class="info-section">
-                            <h4>Standard Dosage & Guidelines</h4>
-                            <div class="dose-container">
-                                <div id="detailDose" class="dose-formatted-block">Dosage directions from HTA guide.</div>
-                            </div>
+                        <div class="info-card">
+                            <h4>Standard Dosage &amp; Guidelines</h4>
+                            <div id="detailDose" class="dose-formatted-block">Dosage directions from HTA guide.</div>
                         </div>
 
                         <!-- Screening & Administrative details -->

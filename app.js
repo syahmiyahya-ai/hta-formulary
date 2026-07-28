@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // DOM Cache
     const searchInput = document.getElementById('searchInput');
-    const prescriberFilters = document.getElementById('prescriberFilters');
+    const prescriberSelect = document.getElementById('prescriberSelect');
     const pedsFilterBtn = document.getElementById('pedsFilterBtn');
     const ehisFilterBtn = document.getElementById('ehisFilterBtn');
     const drugList = document.getElementById('drugList');
@@ -56,8 +56,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const priorityGuideSection = document.getElementById('priorityGuideSection');
     const detailPriorityGuide = document.getElementById('detailPriorityGuide');
 
-    // Initialize stats
-    dbStats.textContent = `${state.drugs.length} Drugs Loaded`;
+    // Helper functions
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function getPrescriberBadgeClass(prescriber) {
+        if (!prescriber) return 'p-default';
+        const p = prescriber.trim();
+        if (p.startsWith('A*')) return 'p-A-star';
+        if (p.startsWith('A')) return 'p-A';
+        if (p.startsWith('B')) return 'p-B';
+        if (p.startsWith('C')) return 'p-C';
+        if (p.startsWith('UKK')) return 'p-UKK';
+        return 'p-default';
+    }
 
     // Initialize app
     applyFilters();
@@ -68,16 +87,12 @@ document.addEventListener('DOMContentLoaded', () => {
         applyFilters();
     });
 
-    prescriberFilters.addEventListener('click', (e) => {
-        const target = e.target;
-        if (!target.classList.contains('chip')) return;
-        
-        prescriberFilters.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-        target.classList.add('active');
-        
-        state.filters.prescriber = target.getAttribute('data-filter');
-        applyFilters();
-    });
+    if (prescriberSelect) {
+        prescriberSelect.addEventListener('change', (e) => {
+            state.filters.prescriber = e.target.value;
+            applyFilters();
+        });
+    }
 
     pedsFilterBtn.addEventListener('click', () => {
         pedsFilterBtn.classList.toggle('active');
@@ -113,11 +128,23 @@ document.addEventListener('DOMContentLoaded', () => {
         state.filteredDrugs = state.drugs.filter(drug => {
             const matchesSearch = !state.filters.search || 
                 drug.name.toLowerCase().includes(state.filters.search) || 
-                drug.indications.toLowerCase().includes(state.filters.search);
+                (drug.indications && drug.indications.toLowerCase().includes(state.filters.search));
                 
-            const matchesPrescriber = state.filters.prescriber === 'all' || 
-                drug.prescriber === state.filters.prescriber ||
-                (state.filters.prescriber === 'C' && (drug.prescriber === 'C' || drug.prescriber === 'C+'));
+            const drugP = drug.prescriber || '';
+            let matchesPrescriber = false;
+            if (state.filters.prescriber === 'all') {
+                matchesPrescriber = true;
+            } else if (state.filters.prescriber === 'A*') {
+                matchesPrescriber = drugP.startsWith('A*');
+            } else if (state.filters.prescriber === 'A') {
+                matchesPrescriber = drugP === 'A' || drugP.startsWith('A\n') || drugP.startsWith('A/');
+            } else if (state.filters.prescriber === 'B') {
+                matchesPrescriber = drugP.startsWith('B');
+            } else if (state.filters.prescriber === 'C') {
+                matchesPrescriber = drugP.startsWith('C');
+            } else if (state.filters.prescriber === 'UKK') {
+                matchesPrescriber = drugP.includes('UKK');
+            }
                 
             const matchesPeds = !state.filters.pedsOnly || drug.has_peds_dose;
             const matchesEhis = !state.filters.ehisOnly || drug.name_ehis === '✓';
@@ -125,38 +152,68 @@ document.addEventListener('DOMContentLoaded', () => {
             return matchesSearch && matchesPrescriber && matchesPeds && matchesEhis;
         });
 
-        matchCount.textContent = state.filteredDrugs.length;
+        if (matchCount) matchCount.textContent = state.filteredDrugs.length;
         renderList();
     }
 
-    // Render list (Limit to top 100 for high performance)
+    // Material 3 Touch Ripple Effect Handler
+    function attachRipple(element) {
+        if (!element) return;
+        element.classList.add('md-ripple');
+        element.addEventListener('pointerdown', (e) => {
+            const circle = document.createElement('span');
+            const diameter = Math.max(element.clientWidth, element.clientHeight);
+            const radius = diameter / 2;
+            const rect = element.getBoundingClientRect();
+
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${e.clientX - rect.left - radius}px`;
+            circle.style.top = `${e.clientY - rect.top - radius}px`;
+            circle.className = 'md-ripple-effect';
+
+            const existing = element.querySelector('.md-ripple-effect');
+            if (existing) existing.remove();
+
+            element.appendChild(circle);
+            setTimeout(() => circle.remove(), 600);
+        });
+    }
+
+    // Attach ripple to static buttons
+    [pedsFilterBtn, ehisFilterBtn, themeToggle].forEach(btn => attachRipple(btn));
+
+    // Render list (Limit to top 100 for high performance with Material 3 Stagger)
     function renderList() {
         drugList.innerHTML = '';
         const itemsToRender = state.filteredDrugs.slice(0, 100);
         
         if (itemsToRender.length === 0) {
-            drugList.innerHTML = '<div class="no-results">No drugs match the filters.</div>';
+            drugList.innerHTML = '<div class="no-results">No drugs match the selected filters.</div>';
             return;
         }
 
-        itemsToRender.forEach(drug => {
+        itemsToRender.forEach((drug, index) => {
             const card = document.createElement('div');
-            card.className = `drug-card ${state.selectedDrug && state.selectedDrug.no === drug.no ? 'active' : ''}`;
+            card.className = `drug-card md-ripple ${state.selectedDrug && state.selectedDrug.no === drug.no ? 'active' : ''}`;
+            card.style.animationDelay = `${Math.min(index * 0.015, 0.3)}s`;
             
-            const classPrescriber = drug.prescriber.replace('*', '-star').replace('+', '');
+            const badgeClass = getPrescriberBadgeClass(drug.prescriber);
+            const indicationText = drug.indications ? drug.indications.replace(/\r?\n|\r/g, ' ') : 'No specific indication recorded.';
+            const displayPrescriber = drug.prescriber ? drug.prescriber.split('\n')[0] : '';
             
             card.innerHTML = `
-                <div class="card-header-main">
-                    <div class="card-name">${drug.name}</div>
-                    <span class="card-prescriber p-${classPrescriber}">${drug.prescriber}</span>
+                <div class="card-top-row">
+                    <span class="card-name" title="${escapeHtml(drug.name)}">${escapeHtml(drug.name)}</span>
+                    <span class="card-prescriber ${badgeClass}">${escapeHtml(displayPrescriber)}</span>
                 </div>
-                <div class="card-indication">${drug.indications || 'No indications listed.'}</div>
+                <div class="card-indication" title="${escapeHtml(indicationText)}">${escapeHtml(indicationText)}</div>
                 <div class="card-badges">
                     ${drug.has_peds_dose ? '<span class="badge-mini peds">👶 Peds</span>' : ''}
-                    ${drug.name_ehis === '✓' ? '<span class="badge-mini">🖥️ e-HIS</span>' : ''}
+                    ${drug.name_ehis === '✓' ? '<span class="badge-mini ehis">🖥️ e-HIS</span>' : ''}
                 </div>
             `;
             
+            attachRipple(card);
             card.addEventListener('click', () => selectDrug(drug));
             drugList.appendChild(card);
         });
@@ -253,14 +310,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const doseText = (drug.dose || '') + '\n' + (drug.priority_guide || '');
         
-        // Find "X mg/kg" or "X mcg/kg" or "X microgram/kg"
-        const mgRegex = /(\d+(?:\.\d+)?)\s*(mg|mcg|microgram)\/kg/gi;
+        // Find "X mg/kg", "X mcg/kg", "X u/kg", "X MU/kg"
+        const mgRegex = /(\d+(?:\.\d+)?)\s*(mg|mcg|microgram|u|units|mu|mega\s*units?)\/kg/gi;
         const matches = [];
         let match;
         
         while ((match = mgRegex.exec(doseText)) !== null) {
             const val = parseFloat(match[1]);
-            const unit = match[2].toLowerCase() === 'mg' ? 'mg/kg' : 'mcg/kg';
+            const unitType = match[2].toLowerCase();
+            const unit = unitType.includes('mg') ? 'mg/kg' :
+                         (unitType.includes('mcg') || unitType.includes('micro')) ? 'mcg/kg' :
+                         (unitType.includes('mu') || unitType.includes('mega')) ? 'MU/kg' : 'u/kg';
             
             // Avoid duplicates
             const isDuplicate = matches.some(m => m.val === val && m.unit === unit);
@@ -292,11 +352,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const weight = parseFloat(childWeight.value);
         const multiplier = parseFloat(doseMultiplier.value);
         const unit = multiplierUnit.value;
+        const calcResult = document.getElementById('calcResult');
 
         if (isNaN(weight) || weight <= 0 || isNaN(multiplier) || multiplier <= 0) {
             calculatedDose.textContent = '-';
-            calculatedUnit.textContent = unit === 'mg/kg' ? 'mg' : 'mcg';
+            calculatedUnit.textContent = unit === 'mg/kg' ? 'mg' : 
+                                         unit === 'mcg/kg' ? 'mcg' : 
+                                         unit === 'u/kg' ? 'units' : 'MU';
             calculatedFormula.textContent = 'Enter weight & multiplier to compute.';
+            if (calcResult) calcResult.classList.remove('has-result');
             return;
         }
 
@@ -310,10 +374,13 @@ document.addEventListener('DOMContentLoaded', () => {
             formattedDose = rawDose.toFixed(1);
         }
 
-        const outUnit = unit === 'mg/kg' ? 'mg' : 'mcg';
+        const outUnit = unit === 'mg/kg' ? 'mg' : 
+                        unit === 'mcg/kg' ? 'mcg' : 
+                        unit === 'u/kg' ? 'units' : 'MU';
         calculatedDose.textContent = formattedDose;
         calculatedUnit.textContent = outUnit;
         calculatedFormula.textContent = `${weight.toFixed(1)} kg × ${multiplier} ${unit} = ${formattedDose} ${outUnit}`;
+        if (calcResult) calcResult.classList.add('has-result');
     }
 
     // Format lengthy clinical texts into structured elements
