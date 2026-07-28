@@ -740,9 +740,17 @@ body {
 }
 
 .alert-priority {
-    background-color: rgba(6, 182, 212, 0.07);
-    border-color: var(--brand-teal);
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(139, 92, 246, 0.06) 100%);
+    border: 1.5px solid rgba(6, 182, 212, 0.45);
+    border-left: 5px solid var(--brand-teal);
     color: var(--text-main);
+    box-shadow: 0 4px 20px rgba(6, 182, 212, 0.12);
+}
+
+.alert-priority .alert-content h4 {
+    color: var(--brand-teal);
+    font-size: 1.02rem;
+    font-weight: 800;
 }
 
 .alert-icon {

@@ -71,17 +71,8 @@
 
             <!-- Detailed View & Calculator Pane -->
             <section class="viewer-pane" id="viewerPane">
-                <!-- Fallback when no drug is selected -->
-                <div class="no-selection-state" id="noSelectionState">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="bounce-icon">
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
-                    <h2>Select a Drug to view details</h2>
-                    <p>Search over 1,100 HTA formulary items and use the dynamic pediatric dosing calculator instantly.</p>
-                </div>
-
                 <!-- Active Drug Profile -->
-                <div class="drug-profile hidden" id="drugProfile">
+                <div class="drug-profile" id="drugProfile">
                     <header class="profile-header">
                         <button class="mobile-back-btn" id="mobileBackBtn">← Back to List</button>
                         <div class="header-main">
@@ -95,6 +86,24 @@
                     </header>
 
                     <div class="profile-body">
+                        <!-- Priority Guide Info (Hospital Tunku Azizah) - Top Priority Component -->
+                        <div class="alert-box alert-priority" id="priorityGuideSection">
+                            <div class="alert-icon">⭐</div>
+                            <div class="alert-content">
+                                <h4>Priority Paediatric Guide (Hospital Tunku Azizah)</h4>
+                                <div id="detailPriorityGuide" class="dose-formatted-block">HTA Guide details...</div>
+                            </div>
+                        </div>
+
+                        <!-- Warnings and Precautions -->
+                        <div class="alert-box alert-warning hidden" id="clinicalWarning">
+                            <div class="alert-icon">⚠️</div>
+                            <div class="alert-content">
+                                <h4>Clinical Warning / Constraint</h4>
+                                <p id="warningText">Warning notes...</p>
+                            </div>
+                        </div>
+
                         <!-- Consolidated Paediatric Calculator Component -->
                         <div class="calculator-card">
                             <div class="calc-header">
@@ -135,24 +144,6 @@
                                     <span class="unit" id="calculatedUnit">mg</span>
                                 </div>
                                 <div class="result-formula" id="calculatedFormula">Enter weight &amp; multiplier to compute.</div>
-                            </div>
-                        </div>
-
-                        <!-- Warnings and Precautions -->
-                        <div class="alert-box alert-warning hidden" id="clinicalWarning">
-                            <div class="alert-icon">⚠️</div>
-                            <div class="alert-content">
-                                <h4>Clinical Warning / Constraint</h4>
-                                <p id="warningText">Warning notes...</p>
-                            </div>
-                        </div>
-
-                        <!-- Priority Guide Info (Hospital Tunku Azizah) -->
-                        <div class="alert-box alert-priority hidden" id="priorityGuideSection">
-                            <div class="alert-icon">⭐</div>
-                            <div class="alert-content">
-                                <h4>Priority Paediatric Guide (Hospital Tunku Azizah)</h4>
-                                <div id="detailPriorityGuide" class="dose-formatted-block">HTA Guide details...</div>
                             </div>
                         </div>
 

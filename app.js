@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         drugList.querySelectorAll('.drug-card').forEach(c => c.classList.remove('active'));
     });
 
-    // Apply Filters & Render
+    // Apply Filters & Render (Smooth In-Place Filtering)
     function applyFilters() {
         state.filteredDrugs = state.drugs.filter(drug => {
             const matchesSearch = !state.filters.search || 
@@ -182,20 +182,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Attach ripple to static buttons
     [pedsFilterBtn, ehisFilterBtn, themeToggle].forEach(btn => attachRipple(btn));
 
-    // Render list (Limit to top 100 for high performance with Material 3 Stagger)
+    // Render list (Limit to top 100 for high performance)
     function renderList() {
         drugList.innerHTML = '';
         const itemsToRender = state.filteredDrugs.slice(0, 100);
         
         if (itemsToRender.length === 0) {
-            drugList.innerHTML = '<div class="no-results">No drugs match the selected filters.</div>';
+            drugList.innerHTML = '<div class="no-results">No drugs match the search query.</div>';
             return;
         }
 
         itemsToRender.forEach((drug, index) => {
             const card = document.createElement('div');
             card.className = `drug-card md-ripple ${state.selectedDrug && state.selectedDrug.no === drug.no ? 'active' : ''}`;
-            card.style.animationDelay = `${Math.min(index * 0.015, 0.3)}s`;
             
             const badgeClass = getPrescriberBadgeClass(drug.prescriber);
             const indicationText = drug.indications ? drug.indications.replace(/\r?\n|\r/g, ' ') : 'No specific indication recorded.';
@@ -214,31 +213,36 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             
             attachRipple(card);
-            card.addEventListener('click', () => selectDrug(drug));
+            card.addEventListener('click', () => selectDrug(drug, true));
             drugList.appendChild(card);
         });
     }
 
-    // Select and Display Drug Detail
-    function selectDrug(drug) {
+    // Select and Display Drug Detail (isUserClick controls screen switching)
+    function selectDrug(drug, isUserClick = true) {
+        if (!drug) return;
         state.selectedDrug = drug;
-        document.querySelector('.app-container').classList.add('has-selection');
+
+        if (isUserClick) {
+            document.querySelector('.app-container').classList.add('has-selection');
+        }
         
         // Highlight active card
         const cards = drugList.querySelectorAll('.drug-card');
-        const index = state.filteredDrugs.indexOf(drug);
-        cards.forEach((c, i) => {
-            c.classList.toggle('active', state.filteredDrugs[i] && state.filteredDrugs[i].no === drug.no);
-        });
+        cards.forEach(c => c.classList.remove('active'));
+        const index = state.filteredDrugs.findIndex(d => d.no === drug.no);
+        if (index >= 0 && cards[index]) {
+            cards[index].classList.add('active');
+        }
 
         // Toggle visibility
-        noSelectionState.classList.add('hidden');
         drugProfile.classList.remove('hidden');
 
-        // Map content
-        detailName.textContent = drug.name;
-        detailPrescriber.textContent = drug.prescriber;
-        detailPrescriber.className = `prescriber-badge card-prescriber p-${drug.prescriber.replace('*', '-star').replace('+', '')}`;
+        // Map content safely
+        const prescriberRaw = drug.prescriber || '';
+        detailName.textContent = drug.name || 'Unknown Drug';
+        detailPrescriber.textContent = prescriberRaw.split('\n')[0] || 'General';
+        detailPrescriber.className = `prescriber-badge card-prescriber ${getPrescriberBadgeClass(prescriberRaw)}`;
         
         detailEhis.textContent = drug.name_ehis === '✓' ? '✓ e-HIS Integrated' : '⚠️ Not in e-HIS';
         detailEhis.style.color = drug.name_ehis === '✓' ? 'var(--brand-teal)' : 'var(--accent-orange)';
@@ -251,12 +255,17 @@ document.addEventListener('DOMContentLoaded', () => {
         detailUkk.textContent = drug.ukk || 'None';
         detailRemarks.textContent = drug.remarks || 'None';
 
-        // Show/hide priority guide section
-        if (drug.priority_guide) {
+        // Populate Priority Paediatric Guide card (Hospital Tunku Azizah) - ALWAYS VISIBLE
+        const guideText = drug.priority_guide || 
+            (drug.peds_dose_notes ? drug.peds_dose_notes : null) || 
+            (drug.dose ? drug.dose : null);
+
+        if (priorityGuideSection) {
             priorityGuideSection.classList.remove('hidden');
-            detailPriorityGuide.innerHTML = formatDoseText(drug.priority_guide);
-        } else {
-            priorityGuideSection.classList.add('hidden');
+            priorityGuideSection.style.display = 'flex';
+        }
+        if (detailPriorityGuide) {
+            detailPriorityGuide.innerHTML = guideText ? formatDoseText(guideText) : '<p class="dose-paragraph"><span class="text-muted">Standard Hospital Tunku Azizah formulary entry. Refer to approved paediatric guidelines below or consult Paediatric ED / Clinical Pharmacy.</span></p>';
         }
 
         // Scan for Clinical Warnings
