@@ -685,6 +685,70 @@ body {
     color: var(--text-main);
 }
 
+/* Formatted Dose Text Styling */
+.dose-formatted-block {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--text-main);
+}
+
+.dose-section-header {
+    color: var(--brand-teal);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 4px;
+}
+
+.light-theme .dose-section-header {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.dose-list {
+    margin-bottom: 14px;
+    padding-left: 20px;
+    list-style-type: square;
+}
+
+.dose-list li {
+    margin-bottom: 6px;
+}
+
+.dose-paragraph {
+    margin-bottom: 12px;
+    text-align: justify;
+}
+
+.highlight-dose {
+    color: #22d3ee; /* cyan-400 */
+    background-color: rgba(34, 211, 238, 0.1);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.light-theme .highlight-dose {
+    color: #0891b2; /* cyan-700 */
+    background-color: rgba(8, 145, 178, 0.08);
+}
+
+.highlight-weight {
+    color: #a78bfa; /* violet-400 */
+    background-color: rgba(167, 139, 250, 0.1);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.light-theme .highlight-weight {
+    color: #6d28d9; /* violet-700 */
+    background-color: rgba(109, 40, 217, 0.08);
+}
+
 /* Mobile Viewport Styling (Responsive Mobile-First Design) */
 @media (max-width: 768px) {
     .app-container {

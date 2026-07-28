@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         detailDiscipline.textContent = drug.discipline || 'General ED';
         detailIndications.textContent = drug.indications || 'No specific indications recorded.';
-        detailDose.textContent = drug.dose || 'No dosage instructions recorded.';
+        detailDose.innerHTML = formatDoseText(drug.dose || 'No dosage instructions recorded.');
         
         detailScreening.textContent = drug.screening || 'None';
         detailUkk.textContent = drug.ukk || 'None';
@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show/hide priority guide section
         if (drug.priority_guide) {
             priorityGuideSection.classList.remove('hidden');
-            detailPriorityGuide.textContent = drug.priority_guide;
+            detailPriorityGuide.innerHTML = formatDoseText(drug.priority_guide);
         } else {
             priorityGuideSection.classList.add('hidden');
         }
@@ -314,5 +314,59 @@ document.addEventListener('DOMContentLoaded', () => {
         calculatedDose.textContent = formattedDose;
         calculatedUnit.textContent = outUnit;
         calculatedFormula.textContent = `${weight.toFixed(1)} kg × ${multiplier} ${unit} = ${formattedDose} ${outUnit}`;
+    }
+
+    // Format lengthy clinical texts into structured elements
+    function formatDoseText(text) {
+        if (!text) return '<span class="text-muted">No instructions recorded.</span>';
+        
+        const lines = text.split('\n');
+        let html = '';
+        let inList = false;
+        
+        lines.forEach(line => {
+            let trimmed = line.trim();
+            if (!trimmed) return;
+            
+            // Highlight weight patterns first
+            trimmed = trimmed.replace(/(\d+(?:\.\d+)?\s*kg)/gi, '<strong class="highlight-weight">$1</strong>');
+            
+            // Highlight doses e.g. 15mg/kg, 500mg, 2g/DAY
+            trimmed = trimmed.replace(/(\b\d+(?:\.\d+)?\s*(?:mg|g|mcg|microgram|ml|u|mu)(?:\/kg|\/dose|\/day)?\b)/gi, '<strong class="highlight-dose">$1</strong>');
+            
+            // Check for section headers (Adult, Children, Suppository, Oral, IV, Loading, Maintenance, etc.)
+            const headerMatch = trimmed.match(/^(adults?|children|neonates?|infants?|indications?|contraindications?|precautions?|suppository|oral|iv|loading|maintenance|treatment|prophylaxis|syrup|tablet|atypical infection|pertussis|pneumonia|tonsillitis\/pharyngitis|acute otitis media|c\.difficile|severe infection|mild infection|rules|requirements):/i);
+            
+            if (trimmed.endsWith(':') || headerMatch) {
+                if (inList) {
+                    html += '</ul>';
+                    inList = false;
+                }
+                html += `<h5 class="dose-section-header">${trimmed}</h5>`;
+            } 
+            // Check for list items
+            else if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.match(/^(?:[a-z\d]+\.|\([a-z\d]+\))/i)) {
+                if (!inList) {
+                    html += '<ul class="dose-list">';
+                    inList = true;
+                }
+                const cleanLine = trimmed.replace(/^([•\-]+|\([a-z\d]+\)|[a-z\d]+\.)\s*/, '');
+                html += `<li>${cleanLine}</li>`;
+            } 
+            // Plain text line
+            else {
+                if (inList) {
+                    html += '</ul>';
+                    inList = false;
+                }
+                html += `<p class="dose-paragraph">${trimmed}</p>`;
+            }
+        });
+        
+        if (inList) {
+            html += '</ul>';
+        }
+        
+        return html;
     }
 });
