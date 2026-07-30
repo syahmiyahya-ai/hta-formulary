@@ -319,13 +319,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const doseText = (drug.dose || '') + '\n' + (drug.priority_guide || '');
         
-        // Find "X mg/kg", "X mcg/kg", "X u/kg", "X MU/kg"
-        const mgRegex = /(\d+(?:\.\d+)?)\s*(mg|mcg|microgram|u|units|mu|mega\s*units?)\/kg/gi;
+        // Find "X mg/kg", "X mcg/kg", "X u/kg", "X MU/kg" (supporting commas like 25,000)
+        const mgRegex = /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*(mg|mcg|microgram|u|units|mu|mega\s*units?)\/kg/gi;
         const matches = [];
         let match;
         
         while ((match = mgRegex.exec(doseText)) !== null) {
-            const val = parseFloat(match[1]);
+            const val = parseFloat(match[1].replace(/,/g, ''));
             const unitType = match[2].toLowerCase();
             const unit = unitType.includes('mg') ? 'mg/kg' :
                          (unitType.includes('mcg') || unitType.includes('micro')) ? 'mcg/kg' :
@@ -405,10 +405,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!trimmed) return;
             
             // Highlight weight patterns first
-            trimmed = trimmed.replace(/(\d+(?:\.\d+)?\s*kg)/gi, '<strong class="highlight-weight">$1</strong>');
+            trimmed = trimmed.replace(/(\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\s*kg\b)/gi, '<strong class="highlight-weight">$1</strong>');
             
-            // Highlight doses e.g. 15mg/kg, 500mg, 2g/DAY
-            trimmed = trimmed.replace(/(\b\d+(?:\.\d+)?\s*(?:mg|g|mcg|microgram|ml|u|mu)(?:\/kg|\/dose|\/day)?\b)/gi, '<strong class="highlight-dose">$1</strong>');
+            // Highlight doses e.g. 15mg/kg, 500mg, 25,000 u/kg, 2g/DAY
+            trimmed = trimmed.replace(/(\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\s*(?:mg|g|mcg|microgram|ml|u|mu|units?|mega\s*units?)(?:\/kg|\/dose|\/day)?\b)/gi, '<strong class="highlight-dose">$1</strong>');
             
             // Check for section headers (Adult, Children, Suppository, Oral, IV, Loading, Maintenance, etc.)
             const headerMatch = trimmed.match(/^(adults?|children|neonates?|infants?|indications?|contraindications?|precautions?|suppository|oral|iv|loading|maintenance|treatment|prophylaxis|syrup|tablet|atypical infection|pertussis|pneumonia|tonsillitis\/pharyngitis|acute otitis media|c\.difficile|severe infection|mild infection|rules|requirements):/i);
