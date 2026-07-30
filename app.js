@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('themeToggle');
     
     // Profile DOM Cache
+    const viewerPane = document.getElementById('viewerPane');
     const noSelectionState = document.getElementById('noSelectionState');
     const drugProfile = document.getElementById('drugProfile');
     const detailName = document.getElementById('detailName');
@@ -222,6 +223,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function selectDrug(drug, isUserClick = true) {
         if (!drug) return;
         state.selectedDrug = drug;
+
+        // Reset scroll position to top when a new drug is selected
+        if (viewerPane) {
+            viewerPane.scrollTop = 0;
+        }
 
         if (isUserClick) {
             document.querySelector('.app-container').classList.add('has-selection');
