@@ -16,23 +16,31 @@
     --border-radius-lg: 16px;
     --border-radius-md: 8px;
     --bg-pattern: none;
+    --bg-pattern-size: auto;
+    --bg-pattern-repeat: no-repeat;
+    --bg-pattern-position: center;
+    --bg-pattern-attachment: scroll;
 }
 
 .light-theme {
-    --bg-primary: #fffbeb;
-    --bg-surface: #fffbeb;
-    --bg-card: rgba(255, 255, 255, 0.88);
-    --border-color: rgba(245, 158, 11, 0.35);
-    --text-main: #1e1b4b;
-    --text-muted: #7c2d12;
+    --bg-primary: #fdf8f5;
+    --bg-surface: rgba(253, 248, 245, 0.82);
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --border-color: rgba(184, 115, 51, 0.25);
+    --text-main: #2b1d0c;
+    --text-muted: #8c4f00;
     
-    --brand-teal: #db2777; /* Cheerful Batik Hot Pink/Magenta */
-    --brand-teal-glow: rgba(219, 39, 119, 0.08);
-    --accent-purple: #4f46e5; /* Royal Indigo */
-    --accent-orange: #ea580c; /* Tropical Orange */
-    --accent-red: #ef4444; /* Bright Red */
+    --brand-teal: #8b3c8f; /* Beautiful Batik Orchid/Plum */
+    --brand-teal-glow: rgba(139, 60, 143, 0.08);
+    --accent-purple: #6d28d9; /* Royal Purple */
+    --accent-orange: #d97706; /* Golden Ochre */
+    --accent-red: #b91c1c; /* Crimson */
     
-    --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23f59e0b' stroke-width='1.2' opacity='0.25'%3E%3Ccircle cx='40' cy='40' r='30'/%3E%3Ccircle cx='0' cy='40' r='30'/%3E%3Ccircle cx='80' cy='40' r='30'/%3E%3Ccircle cx='40' cy='0' r='30'/%3E%3Ccircle cx='40' cy='80' r='30'/%3E%3C/g%3E%3Cg fill='none' stroke='%236366f1' stroke-width='0.9' opacity='0.25'%3E%3Cpath d='M 40,10 C 35,25 35,55 40,70 C 45,55 45,25 40,10 Z'/%3E%3Cpath d='M 10,40 C 25,35 55,35 70,40 C 55,45 25,45 10,40 Z'/%3E%3C/g%3E%3Cg fill='none' stroke='%23ec4899' stroke-width='0.8' opacity='0.25'%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3Ccircle cx='0' cy='0' r='8'/%3E%3Ccircle cx='80' cy='0' r='8'/%3E%3Ccircle cx='0' cy='80' r='8'/%3E%3Ccircle cx='80' cy='80' r='8'/%3E%3C/g%3E%3C/svg%3E");
+    --bg-pattern: url("batik.png");
+    --bg-pattern-size: cover;
+    --bg-pattern-repeat: no-repeat;
+    --bg-pattern-position: right bottom;
+    --bg-pattern-attachment: fixed;
 }
 
 * {
@@ -46,8 +54,10 @@
 body {
     background-color: var(--bg-primary);
     background-image: var(--bg-pattern);
-    background-size: 80px 80px;
-    background-repeat: repeat;
+    background-size: var(--bg-pattern-size, auto);
+    background-repeat: var(--bg-pattern-repeat, no-repeat);
+    background-position: var(--bg-pattern-position, center);
+    background-attachment: var(--bg-pattern-attachment, scroll);
     color: var(--text-main);
     overflow: hidden;
     height: 100vh;
@@ -65,8 +75,10 @@ body {
     width: 380px;
     background-color: var(--bg-surface);
     background-image: var(--bg-pattern);
-    background-size: 80px 80px;
-    background-repeat: repeat;
+    background-size: var(--bg-pattern-size, auto);
+    background-repeat: var(--bg-pattern-repeat, no-repeat);
+    background-position: var(--bg-pattern-position, center);
+    background-attachment: var(--bg-pattern-attachment, scroll);
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
@@ -418,8 +430,10 @@ body {
     overflow-y: auto;
     background-color: var(--bg-surface);
     background-image: var(--bg-pattern);
-    background-size: 80px 80px;
-    background-repeat: repeat;
+    background-size: var(--bg-pattern-size, auto);
+    background-repeat: var(--bg-pattern-repeat, no-repeat);
+    background-position: var(--bg-pattern-position, center);
+    background-attachment: var(--bg-pattern-attachment, scroll);
     display: flex;
     flex-direction: column;
 }
