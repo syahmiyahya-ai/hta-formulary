@@ -362,12 +362,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function detectDivisor(text) {
+        if (!text) return 1;
+        const lower = text.toLowerCase();
+        
+        // Match: "divided into 3 doses", "in 2 divided doses", "divided in 4", "divided q6h", etc.
+        const dividedDosesRegex = /(?:in|into|giving|given\s+in)?\s*(\d+)\s+divided\s+doses?/i;
+        const dividedInRegex = /divided\s+(?:in|into)\s*(\d+)/i;
+        
+        let match = lower.match(dividedDosesRegex);
+        if (match) return parseInt(match[1], 10);
+        
+        match = lower.match(dividedInRegex);
+        if (match) return parseInt(match[1], 10);
+        
+        // Interval matching
+        if (lower.match(/q6h|every\s+6\s*h|6\s*hourly|divided\s+q6h/i)) return 4;
+        if (lower.match(/q8h|every\s+8\s*h|8\s*hourly|divided\s+q8h/i)) return 3;
+        if (lower.match(/q12h|every\s+12\s*h|12\s*hourly|twice\s+daily|divided\s+q12h/i)) return 2;
+        if (lower.match(/q4h|every\s+4\s*h|4\s*hourly|divided\s+q4h/i)) return 6;
+
+        // Word number matching
+        if (lower.match(/two\s+divided\s+doses/i)) return 2;
+        if (lower.match(/three\s+divided\s+doses/i)) return 3;
+        if (lower.match(/four\s+divided\s+doses/i)) return 4;
+        if (lower.match(/six\s+divided\s+doses/i)) return 6;
+        
+        return 1;
+    }
+
     // Calculate paediatric dose
     function calculatePediatricDose() {
         const weight = parseFloat(childWeight.value);
         const multiplier = parseFloat(doseMultiplier.value);
         const unit = multiplierUnit.value;
         const calcResult = document.getElementById('calcResult');
+        const resultLabel = document.querySelector('.result-label');
 
         if (isNaN(weight) || weight <= 0 || isNaN(multiplier) || multiplier <= 0) {
             calculatedDose.textContent = '-';
@@ -376,17 +406,27 @@ document.addEventListener('DOMContentLoaded', () => {
                                          unit === 'u/kg' ? 'units' : 'MU';
             calculatedFormula.textContent = 'Enter weight & multiplier to compute.';
             if (calcResult) calcResult.classList.remove('has-result');
+            if (resultLabel) resultLabel.textContent = 'Calculated Single Dose';
             return;
         }
 
-        const rawDose = weight * multiplier;
-        let formattedDose = rawDose.toFixed(2);
+        const totalDose = weight * multiplier;
+        
+        // Detect divisor for divided doses
+        let divisor = 1;
+        if (state.selectedDrug) {
+            const combinedText = `${state.selectedDrug.priority_guide || ''} ${state.selectedDrug.dose || ''} ${state.selectedDrug.peds_dose_notes || ''}`;
+            divisor = detectDivisor(combinedText);
+        }
+
+        const singleDose = totalDose / divisor;
+        let formattedDose = singleDose.toFixed(2);
         
         // Clean trailing zeros for round numbers
         if (formattedDose.endsWith('.00')) {
-            formattedDose = rawDose.toFixed(0);
+            formattedDose = singleDose.toFixed(0);
         } else if (formattedDose.endsWith('0')) {
-            formattedDose = rawDose.toFixed(1);
+            formattedDose = singleDose.toFixed(1);
         }
 
         const outUnit = unit === 'mg/kg' ? 'mg' : 
@@ -394,7 +434,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         unit === 'u/kg' ? 'units' : 'MU';
         calculatedDose.textContent = formattedDose;
         calculatedUnit.textContent = outUnit;
-        calculatedFormula.textContent = `${weight.toFixed(1)} kg × ${multiplier} ${unit} = ${formattedDose} ${outUnit}`;
+
+        if (divisor > 1) {
+            let totalFormatted = totalDose.toFixed(2);
+            if (totalFormatted.endsWith('.00')) totalFormatted = totalDose.toFixed(0);
+            else if (totalFormatted.endsWith('0')) totalFormatted = totalDose.toFixed(1);
+            
+            calculatedFormula.textContent = `${weight.toFixed(1)} kg × ${multiplier} ${unit} = ${totalFormatted} ${outUnit}/day (divided into ${divisor} doses of ${formattedDose} ${outUnit})`;
+            if (resultLabel) resultLabel.textContent = `Calculated Single Dose (1/${divisor})`;
+        } else {
+            calculatedFormula.textContent = `${weight.toFixed(1)} kg × ${multiplier} ${unit} = ${formattedDose} ${outUnit}`;
+            if (resultLabel) resultLabel.textContent = 'Calculated Single Dose';
+        }
+        
         if (calcResult) calcResult.classList.add('has-result');
     }
 
