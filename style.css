@@ -24,9 +24,9 @@
 
 .light-theme {
     --bg-primary: #fdf8f5;
-    --bg-surface: #fffdfa;
-    --bg-card: #ffffff;
-    --border-color: rgba(184, 115, 51, 0.18);
+    --bg-surface: rgba(253, 248, 245, 0.92);
+    --bg-card: rgba(255, 255, 255, 0.96);
+    --border-color: rgba(184, 115, 51, 0.22);
     --text-main: #2b1d0c;
     --text-muted: #8c4f00;
     
@@ -36,7 +36,7 @@
     --accent-orange: #d97706; /* Golden Ochre */
     --accent-red: #b91c1c; /* Crimson */
     
-    --bg-pattern: linear-gradient(rgba(253, 248, 245, 0.94), rgba(253, 248, 245, 0.94)), url("batik.png");
+    --bg-pattern: linear-gradient(rgba(253, 248, 245, 0.88), rgba(253, 248, 245, 0.88)), url("batik.png");
     --bg-pattern-size: cover;
     --bg-pattern-repeat: no-repeat;
     --bg-pattern-position: right bottom;
@@ -325,6 +325,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    flex-shrink: 0;
 }
 
 .drug-card:hover {
@@ -429,6 +430,11 @@ body {
     flex: 1;
     overflow-y: auto;
     background-color: var(--bg-surface);
+    background-image: var(--bg-pattern);
+    background-size: var(--bg-pattern-size, auto);
+    background-repeat: var(--bg-pattern-repeat, no-repeat);
+    background-position: var(--bg-pattern-position, center);
+    background-attachment: var(--bg-pattern-attachment, scroll);
     display: flex;
     flex-direction: column;
 }

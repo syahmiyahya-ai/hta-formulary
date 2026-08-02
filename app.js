@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pedsOnly: false,
             ehisOnly: false
         },
-        theme: 'dark'
+        theme: 'light'
     };
 
     // DOM Cache
